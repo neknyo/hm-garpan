@@ -1,0 +1,39 @@
+name: Deploy MkDocs via FTP
+
+on:
+  push:
+    branches:
+      - main  # Change this if your branch is named 'master'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Download your code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Install Python & MkDocs
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Install dependencies
+        run: |
+          pip install mkdocs-material
+          # Add any other plugins here, e.g., pip install mkdocs-git-revision-date-localized-plugin
+
+      # 3. Build the site (converts Markdown to HTML)
+      - name: Build MkDocs
+        run: mkdocs build
+
+      # 4. Upload the 'site' folder to your hosting
+      - name: FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./site/     # This is where mkdocs puts the built files
+          server-dir: ./public_html/ # CHANGE THIS to your actual folder path on the server
